@@ -3,7 +3,9 @@
     "allow": [
       "Bash(find . -type f -name *.go -o -name *.proto -o -name *.yml -o -name *.yaml -o -name Dockerfile -o -name Makefile -o -name *.sql -o -name *.sh -o -name *.conf -o -name go.mod)",
       "Bash(README.md:*)",
-      "Bash(printf:*)"
+      "Bash(printf:*)",
+      "Bash(sed -n '75,85p' README.md)",
+      "Bash(sed -n '135,145p' README.md)"
     ]
   }
 }

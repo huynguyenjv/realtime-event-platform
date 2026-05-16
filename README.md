@@ -74,6 +74,19 @@ Built with **distributed systems principles**, **event-driven architecture**, an
 
 ## Architecture
 
+<div align="center">
+  <img src="docs/assets/architecture-overview.svg" alt="Architecture Overview" width="100%"/>
+</div>
+
+### Event Flow
+
+<div align="center">
+  <img src="docs/assets/event-flow.svg" alt="Event Flow" width="100%"/>
+</div>
+
+<details>
+<summary>ASCII Diagram (click to expand)</summary>
+
 ```
                          +-------------------------------------------------------------+
                          |                    Frontend Dashboard                        |
@@ -129,6 +142,7 @@ Built with **distributed systems principles**, **event-driven architecture**, an
 +----------+    +-------------+    +---------------+    +----------------+
 ```
 
+</details>
 ---
 
 ## Services

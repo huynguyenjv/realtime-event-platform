@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS event_metrics;
+DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS alert_history;
+DROP TABLE IF EXISTS alert_rules;
+DROP TABLE IF EXISTS api_keys;
+DROP TABLE IF EXISTS users;

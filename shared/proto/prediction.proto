@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package prediction;
+
+option go_package = "github.com/huynguyenjv/realtime-event-platform/shared/proto/prediction";
+
+import "google/protobuf/timestamp.proto";
+
+message PredictionRequest {
+  string event_type = 1;
+  map<string, double> features = 2;
+  string model_version = 3;
+}
+
+message PredictionResponse {
+  string prediction_id = 1;
+  double score = 2;
+  string label = 3;
+  double confidence = 4;
+  map<string, double> probabilities = 5;
+  google.protobuf.Timestamp timestamp = 6;
+}
+
+message BatchPredictionRequest {
+  repeated PredictionRequest requests = 1;
+}
+
+message BatchPredictionResponse {
+  repeated PredictionResponse responses = 1;
+}
+
+service PredictionService {
+  rpc Predict(PredictionRequest) returns (PredictionResponse);
+  rpc PredictBatch(BatchPredictionRequest) returns (BatchPredictionResponse);
+}

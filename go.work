@@ -1,0 +1,12 @@
+go 1.26.3
+
+use (
+	./services/collector-service
+	./services/analytics-service
+	./services/prediction-service
+	./services/websocket-gateway
+	./services/query-service
+	./services/auth-service
+	./services/alert-service
+	./shared/libs
+)

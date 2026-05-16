@@ -1,0 +1,218 @@
+version: '3.8'
+
+services:
+  # Infrastructure
+  postgres:
+    image: postgres:16-alpine
+    container_name: event-platform-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: event_platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: event-platform-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:7
+    container_name: event-platform-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: event-platform-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: event-platform-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Application Services
+  collector-service:
+    build:
+      context: ../../services/collector-service
+      dockerfile: Dockerfile
+    container_name: event-platform-collector
+    ports:
+      - "8081:8080"
+    environment:
+      - APP_ENV=development
+      - KAFKA_BROKERS=kafka:29092
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  analytics-service:
+    build:
+      context: ../../services/analytics-service
+      dockerfile: Dockerfile
+    container_name: event-platform-analytics
+    ports:
+      - "8082:8080"
+    environment:
+      - APP_ENV=development
+      - KAFKA_BROKERS=kafka:29092
+      - POSTGRES_URL=postgres://postgres:postgres@postgres:5432/event_platform?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  prediction-service:
+    build:
+      context: ../../services/prediction-service
+      dockerfile: Dockerfile
+    container_name: event-platform-prediction
+    ports:
+      - "8083:8080"
+      - "9093:9090"
+    environment:
+      - APP_ENV=development
+      - KAFKA_BROKERS=kafka:29092
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  websocket-gateway:
+    build:
+      context: ../../services/websocket-gateway
+      dockerfile: Dockerfile
+    container_name: event-platform-websocket
+    ports:
+      - "8084:8080"
+    environment:
+      - APP_ENV=development
+      - KAFKA_BROKERS=kafka:29092
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  query-service:
+    build:
+      context: ../../services/query-service
+      dockerfile: Dockerfile
+    container_name: event-platform-query
+    ports:
+      - "8085:8080"
+      - "9095:9090"
+    environment:
+      - APP_ENV=development
+      - POSTGRES_URL=postgres://postgres:postgres@postgres:5432/event_platform?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  auth-service:
+    build:
+      context: ../../services/auth-service
+      dockerfile: Dockerfile
+    container_name: event-platform-auth
+    ports:
+      - "8086:8080"
+    environment:
+      - APP_ENV=development
+      - POSTGRES_URL=postgres://postgres:postgres@postgres:5432/event_platform?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-super-secret-key-change-in-production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  alert-service:
+    build:
+      context: ../../services/alert-service
+      dockerfile: Dockerfile
+    container_name: event-platform-alert
+    ports:
+      - "8087:8080"
+    environment:
+      - APP_ENV=development
+      - KAFKA_BROKERS=kafka:29092
+      - POSTGRES_URL=postgres://postgres:postgres@postgres:5432/event_platform?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  mongodb_data:
+
+networks:
+  default:
+    name: event-platform-network

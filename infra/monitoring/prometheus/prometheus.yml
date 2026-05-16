@@ -1,0 +1,54 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files: []
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'collector-service'
+    static_configs:
+      - targets: ['collector-service:8080']
+    metrics_path: /metrics
+
+  - job_name: 'analytics-service'
+    static_configs:
+      - targets: ['analytics-service:8080']
+    metrics_path: /metrics
+
+  - job_name: 'prediction-service'
+    static_configs:
+      - targets: ['prediction-service:8080']
+    metrics_path: /metrics
+
+  - job_name: 'websocket-gateway'
+    static_configs:
+      - targets: ['websocket-gateway:8080']
+    metrics_path: /metrics
+
+  - job_name: 'query-service'
+    static_configs:
+      - targets: ['query-service:8080']
+    metrics_path: /metrics
+
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['auth-service:8080']
+    metrics_path: /metrics
+
+  - job_name: 'alert-service'
+    static_configs:
+      - targets: ['alert-service:8080']
+    metrics_path: /metrics
+
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka:9092']

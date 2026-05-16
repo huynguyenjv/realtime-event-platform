@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package event;
+
+option go_package = "github.com/huynguyenjv/realtime-event-platform/shared/proto/event";
+
+import "google/protobuf/timestamp.proto";
+
+message Event {
+  string id = 1;
+  string type = 2;
+  string source = 3;
+  bytes payload = 4;
+  map<string, string> metadata = 5;
+  google.protobuf.Timestamp timestamp = 6;
+}
+
+message EventBatch {
+  repeated Event events = 1;
+}
+
+message PublishRequest {
+  Event event = 1;
+}
+
+message PublishResponse {
+  string event_id = 1;
+  bool success = 2;
+}
+
+message PublishBatchRequest {
+  EventBatch batch = 1;
+}
+
+message PublishBatchResponse {
+  repeated string event_ids = 1;
+  int32 success_count = 2;
+  int32 failed_count = 3;
+}
+
+service EventService {
+  rpc Publish(PublishRequest) returns (PublishResponse);
+  rpc PublishBatch(PublishBatchRequest) returns (PublishBatchResponse);
+}

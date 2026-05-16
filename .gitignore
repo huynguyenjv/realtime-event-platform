@@ -1,0 +1,59 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+
+# Test binary
+*.test
+
+# Output of go coverage
+*.out
+coverage.html
+
+# Go workspace
+go.work.sum
+
+# Dependency directories
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+
+# Docker
+docker-compose.override.yml
+
+# Kubernetes secrets
+*-secret.yaml
+*-secrets.yaml
+
+# Build cache
+.cache/
+
+# Proto generated files (optional - uncomment if you want to ignore)
+# shared/proto/*.pb.go

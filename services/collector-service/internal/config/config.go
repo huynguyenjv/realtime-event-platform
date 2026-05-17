@@ -18,7 +18,7 @@ type Config struct {
 
 func Load() *Config {
 	return &Config{
-		Port:         getEnv("PORT", "8080"),
+		Port:         getEnv("PORT", "8088"),
 		AppEnv:       getEnv("APP_ENV", "development"),
 		KafkaBrokers: strings.Split(getEnv("KAFKA_BROKERS", "localhost:9092"), ","),
 		KafkaTopic:   getEnv("KAFKA_TOPIC", "events.raw"),

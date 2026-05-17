@@ -30,7 +30,11 @@ func main() {
 	)
 
 	// 3. Initialize collector service
-	collector := service.NewCollector(cfg, logger)
+	collector, err := service.NewCollector(cfg, logger)
+	if err != nil {
+		logger.Error("Failed to create collector", "error", err)
+		os.Exit(1)
+	}
 
 	// 4. Setup HTTP server
 	if !cfg.IsDevelopment() {

@@ -1,0 +1,1 @@
+-- Cannot safely drop timescaledb if other objects depend on it

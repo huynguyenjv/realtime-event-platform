@@ -132,16 +132,18 @@ services:
 
   analytics-service:
     build:
-      context: ../../services/analytics-service
-      dockerfile: Dockerfile
-    container_name: event-platform-analytics
+      context: ../../
+      dockerfile: services/analytics-service/Dockerfile
     ports:
       - "8082:8080"
     environment:
       - APP_ENV=development
+      - PORT=8080
       - KAFKA_BROKERS=kafka:29092
-      - POSTGRES_URL=postgres://postgres:postgres@postgres:5432/event_platform?sslmode=disable
-      - REDIS_URL=redis://redis:6379
+      - KAFKA_GROUP_ID=analytics-service
+      - KAFKA_CONSUME_TOPIC=events.raw
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/eventdb?sslmode=disable
+      - REDIS_ADDR=redis:6379
     depends_on:
       kafka:
         condition: service_healthy
@@ -149,6 +151,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - event-platform-network
+    restart: unless-stopped
 
   prediction-service:
     build:
@@ -249,5 +254,7 @@ volumes:
   grafana_data:
 
 networks:
+  event-platform-network:
+    name: event-platform-network
   default:
     name: event-platform-network
